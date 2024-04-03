@@ -106,20 +106,22 @@ def upload_to_diawi(source_file,token):
                              headers={'Content-Type': multipart_encoder.content_type})
     js = resp.json()
     if 'job' not in js:
+        print("Failed: upload file to Diawi")
         return None
     job_id = js["job"]
     print("Uploaded, processing...")
     while True:
-            resp = requests.get("https://upload.diawi.com/status",
-                                params={"token": token, "job": job_id})
-            data = resp.json()
-            msg = data["message"]
-
-            if msg == "Ok":
-                links['qrcode'] = data["qrcode"]
-                links['link'] = data["link"]
-                break
-            time.sleep(1)   
+            # Poll the status of the job
+            if(job_id):
+                resp = requests.get("https://upload.diawi.com/status",
+                                    params={"token": token, "job": job_id})
+                data = resp.json()
+                msg = data["message"]
+                if msg == "Ok":
+                    links['qrcode'] = data["qrcode"]
+                    links['link'] = data["link"]
+                    break
+                time.sleep(1)   
     return links
 def get_app(release_dir):
     output_path = os.path.join(release_dir, 'output-metadata.json')
@@ -145,6 +147,7 @@ def get_changes(change_log_path):
     Returns:
         str: Latest changes.
     '''
+    print("change_log_path")
     with(open(change_log_path)) as change_log_file:
         change_log = change_log_file.read()
 
@@ -154,7 +157,7 @@ def get_changes(change_log_path):
 
     return latest_version_changes
 
-def get_email(app_name, app_version, app_url, changes, template_file_path):
+def get_email(app_name, app_version, links, changes, template_file_path):
     '''Use template file to create release email subject and title.
 
     Args:
@@ -167,6 +170,7 @@ def get_email(app_name, app_version, app_url, changes, template_file_path):
     Returns:
         (str, str): Email subject and email body.
     '''
+    print()
     target_subject = 1
     target_body = 2
     target = 0
@@ -174,7 +178,7 @@ def get_email(app_name, app_version, app_url, changes, template_file_path):
     body = ''
 
     template = ''
-
+    print(links)
     with(open(template_file_path)) as template_file:
         # Open template file and replace placeholders with data
         template = template_file.read().format(
