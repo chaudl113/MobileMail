@@ -219,13 +219,10 @@ def send_email(to, subject, body,gmail_user,gmail_password):
 
     # Add body to the email
     msg.attach(MIMEText(body, 'html'))
-
     r =  server.send_message(msg)
-
-
-    # r = requests.post(zapier_hook, data=json.dumps(ZAPIER_SEND_DATA), headers=headers)
-
-    return r
+    if(r == {}):
+        print("Success: send email")
+        return True 
 
 if __name__ == '__main__':
     
