@@ -178,13 +178,18 @@ def get_email(app_name, app_version, links, changes, template_file_path):
     body = ''
 
     template = ''
-    print(links)
+    # String to Html wapper for email
+    parts = changes.strip().split('\n\n')
+    desired_string = ""
+    for part in parts:
+        desired_string += "<p>" + part.replace('\n', '</p>\n<p>') + "</p>\n"
+
     with(open(template_file_path)) as template_file:
         # Open template file and replace placeholders with data
         template = template_file.read().format(
             app_download_url=links['link'],
             app_logo_url=links['qrcode'],
-            change_log=changes,
+            change_log=desired_string,
             app_name=app_name,
             app_version=app_version
         )
